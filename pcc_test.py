@@ -1,6 +1,7 @@
 import random 
 import os
 import copy
+from dijkstra_pcc import solve_using_dijkstra
 
 os.system('cls')
 def enconde_input( matrix_lenght , min_weight , max_weight ):
@@ -43,6 +44,20 @@ def enconde_input( matrix_lenght , min_weight , max_weight ):
 
     return matrix_row
 
+def equal_graph(graph1 ,graph2) -> bool:
+
+    try:
+        for key in graph1:
+        
+            if len(graph1[key]) != len(graph2[key]): return False
+        
+        for element in graph1[key]:
+            if element not in graph2[key]:
+                return False
+    
+    except: return False
+
+    return True
 
 def brute_force( matrix:list ):
  
@@ -129,7 +144,7 @@ num_test_per_param = 5
 
 # _________________________SET THE NUMBER OF TEST CASES_________
 test_cases = [] # { 'input': adyacency matrix , 'output': length streets per every two nodes }
-num_test_cases = 1000
+num_test_cases = 100
 
 # NOTE: THIS BRUTE FORCE IS O(n!) , this is , all of the paths between every two vertex
 # _____________________________________________________________
@@ -148,10 +163,10 @@ while not leave:
             test = num_test_per_param
             while test != 0: # generate random cases with the same params
                 os.system('cls')
-                graph = enconde_input(matrix_lenght=matrix_lenght, min_weight=min_weight, max_weight=max_weight)
-                min_streets =  brute_force( graph )
+                sample = enconde_input(matrix_lenght=matrix_lenght, min_weight=min_weight, max_weight=max_weight)
+                min_streets =  brute_force( sample )
                 test -= 1
-                my_graph = copy.deepcopy(graph)
+                my_graph = copy.deepcopy(sample)
                 test_cases.append({'input': my_graph , 'output': min_streets } )
 
                 if len(test_cases) == num_test_cases:
@@ -161,7 +176,25 @@ while not leave:
             if leave: break
         
         if leave: break
-        
-    
+
+
+# ___________________________TEST__________________________________
+
+
+def your_fast_algorithm(graph):
+    return solve_using_dijkstra(graph=graph)
     
 
+for sample in test_cases:
+    output = your_fast_algorithm(graph= sample['input'] )
+    
+    try:
+        assert equal_graph( output , sample['output'] )
+    
+    except AssertionError as e:
+        input_gf = sample['input']
+        print( f'\033[1;31m Wrong answer at input \033[0m {input_gf}' )
+        exit()
+
+print( '\033[1;32m PASSED ALL TEST CASES GENERATED \033[0m' )
+    
