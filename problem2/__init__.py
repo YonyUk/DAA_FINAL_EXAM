@@ -5,7 +5,7 @@ todos los metodos usados para la solucion del problema 2
 """
 
 from problem2.brute_force import brute_force,brute_force_improved
-from problem2.tester import check,generate
+from problem2.tester import check,generate,generate_tuple,encode_problem_instance,make_no_transitive_relation,make_transitive_relation
 from problem2.specific_instances_solutions import transitive_instance_solution
 from datetime import datetime
 

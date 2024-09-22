@@ -31,20 +31,102 @@ def check_relations(robots,relations):
 def check(robots,crews,relations):
     return check_crews(robots,crews) and check_relations(robots,relations)
 
-def generate(min_cases,max_cases,tests_cases=100,seed=2,pseed=2):
+def generate_tuple(min_size,max_size,tests_cases=100):
+    for i in range(tests_cases):
+        size = random.randint(min_size,max_size)
+        robots = [i for i in range(size)]
+        R = [i for i in range(size)]
+        P = []
+        F = []
+
+        random.shuffle(robots)
+        while len(robots) > 0:
+            end = random.randint(1,len(robots) - random.randint(0,len(robots) - 1))
+            P.append(robots[:end])
+            robots = robots[end:]
+            pass
+        
+        f_count = random.randint(0,size**2 - random.randint(size**2 // 2,size**2))
+        for _ in range(f_count):
+            r0 = random.randint(0,len(R))
+            options = [i for i in range(len(R)) if not i == r0]
+            r1 = random.choice(options)
+            if not (r0,r1) in F:
+                F += [(r0,r1),(r1,r0)]
+                pass
+            pass
+        if i % 2 == 0:
+            yield R,P,make_no_transitive_relation(F)
+            pass
+        else:
+            yield R,P,make_transitive_relation(F)
+            pass
+        pass
+    pass
+
+def make_no_transitive_relation(pairs):
+    while True:
+        ok = True
+        for p0 in pairs:
+            for p1 in pairs:
+                if not p0 == p1 and p0[1] == p1[0] and not p0[0] == p1[1]:
+                    if (p0[0],p1[1]) in pairs:
+                        pairs.remove((p0[0],p1[1]))
+                        pairs.remove((p1[1],p0[0]))
+                        ok = False
+                        pass
+                    break
+                pass
+            if not ok:
+                break
+            pass
+        if ok:
+            break
+        pass
+    return pairs
+
+def make_transitive_relation(pairs):
+    while True:
+        ok = True
+        for p0 in pairs:
+            for p1 in pairs:
+                if not p0 == p1 and p1[0] == p0[1] and not p1[1] == p0[0] and not (p0[0],p1[1]) in pairs:
+                    pairs.append((p0[0],p1[1]))
+                    pairs.append((p1[1],p0[0]))
+                    ok = False
+                    break
+                pass
+            if not ok:
+                break
+            pass
+        if ok:
+            break
+        pass
+    return pairs
+
+def encode_problem_instance(data):
+    R,P,F = data[0],data[1],data[2]
+    output = []
+    for robot in R:
+        pieces = [robot]
+        r_faction = -1
+        for p in P:
+            if robot in p:
+                r_faction = P.index(p)
+                break
+            pass
+        for r in R:
+            if not r == robot and (robot,r) in F:
+                pieces.append(r)
+                pass
+            pass
+        output.append((r_faction,pieces))
+        pass
+    return output
+
+def generate(min_size,max_size,tests_cases=100):
     """
     seed: usado para variar la probabilidad de que la respuesta sea negativa
     pseed: usado para controlar la probabilidad de que los robots compartan piezas
     """
-    
-    for _ in range(tests_cases):
-        size = random.randint(min_cases,max_cases)
-        robots = []
-        for _ in range(size):
-            faction = random.randint(0,int(size // pseed))
-            pieces = [random.randint(0,int(size // pseed)) for _ in range(random.randint(1,int(size*seed)))]
-            robots.append((faction,list(set(pieces))))
-            pass
-        yield robots
-        pass
-    pass
+    return map(encode_problem_instance,generate_tuple(min_size,max_size,tests_cases))
